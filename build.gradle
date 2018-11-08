@@ -1,0 +1,214 @@
+apply plugin: 'java'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'war'
+
+compileJava.options.encoding = 'UTF-8'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+version = '1.0'
+
+eclipse {
+	project.natures "org.springsource.ide.eclipse.gradle.core.nature"
+	wtp {
+		facet {
+			facet name: 'jst.web', version: '3.1'	// Server Spec Version
+			facet name: 'jst.java', version: '1.8'	// Java Version
+		}
+	}
+}
+
+//디폴트 패키징
+final String DEFAULT_PROFILE = 'local'
+
+allprojects {
+	if (!project.hasProperty('profile') || !profile) {
+		ext.profile = DEFAULT_PROFILE
+	}
+
+	sourceSets {
+		main {
+			resources {
+				srcDir "src/main/resources-${profile}"
+			}
+		}
+	}
+}
+
+// java plugin에 속하면 jar파일에 대해서 설정
+jar {
+    manifest {
+        attributes 'Implementation-Title': 'Gradle Quickstart', 'Implementation-Version': version
+    }
+    // manifest : MANIFEST.MF 파일에 들어갈 숙성=값 정보를 설정. 이 파일은 jar 파일 안에 META-INF에 들어감
+    // archiveName : JAR 파일이름. 지정하지 않으면 다음 조합으로 이름 지정. baseName-appendix-version-classifier.extension 이렇게 파일이름 지정
+    // baseName : JAR 파일의 기본이름
+    // appendix : 추가할 말
+    // version : 버전
+    // classifier : 이건 주로 몰 넣는거지?
+    // extension : 확장자 말하는 듯. 기본값은 jar임
+    // excludes : jar파일에서 제외할 팔일 지정. ['**/*.txt'] -> 폴더에 상관없이 확장자가 txt파일은 제외한다는 것
+    // includes : jar파일에서 포함할 파일 지정. ['conf/*.xml'] -> conf폴더에 xml파일은 포함
+}
+
+// 의존라이브러리를 가져올 저장소 설정
+repositories {
+    mavenCentral()
+    jcenter()
+    // 사용자 지정 레포지토리
+    /*
+    maven {
+    	// 인증 필요시..
+    	credentials {
+            username 'user'
+            password 'password'
+        }
+        url "http://repo.mycompany.com/maven2"
+    }
+    */
+    // mavenCetnral() : Maven 중앙 서버를 저장소로 지정. 서버의 기본 URL은 http://repo1.maven.org/maven2 이다.
+    // flatDir() : 로컬 폴더를 저장소로 지정
+    // ivy() : Apache Ivy 서버를 저장소로 지정
+    // jcenter() : Bintray의 jcenter 서버를 저장소로 지정
+    // mavenLocal() : Maven로컬 임시 보관소를 저장소로 지정
+}
+
+// dependency 버전 정보
+def version = [
+	spring: '4.3.5.RELEASE',
+	security: '4.2.1.RELEASE',
+	aspectj: '1.9.1',
+	tiles: '3.0.7',
+	hibernate: '5.1.0.Final',
+	logback: '1.1.7',
+	querydsl: '4.1.3'
+]
+
+
+// 의존 라이브러리 지정
+// 예시 [설정이름] [ 의존 라이브러리 정보]
+dependencies {
+	// compile project(':medijob_core')
+
+	providedCompile 'javax.servlet:javax.servlet-api:3.1.0'
+	providedCompile 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.1'
+	providedCompile 'javax.servlet.jsp:jsp-api:2.2'
+
+	compile ("org.springframework:spring-context:${version.spring}") {
+		exclude group: "commons-logging", module: "commons-logging"
+	}
+	compile "org.springframework:spring-context-support:${version.spring}"	// Spring Context Support
+	compile "org.springframework:spring-web:${version.spring}"
+	compile "org.springframework:spring-webmvc:${version.spring}"
+	compile "org.springframework:spring-jdbc:${version.spring}"
+	compile "org.springframework:spring-aop:${version.spring}"
+	compile "org.springframework:spring-orm:${version.spring}"	// Spring Object/Relational Mapping
+	compile "org.springframework:spring-oxm:${version.spring}" // Spring Object/XML Marshalling
+	compile "org.springframework:spring-tx:${version.spring}"	// Spring Transaction
+
+    compile "org.springframework.security:spring-security-web:${version.security}"
+    compile "org.springframework.security:spring-security-core:${version.security}"
+    compile "org.springframework.security:spring-security-config:${version.security}"
+    compile "org.springframework.security:spring-security-taglibs:${version.security}"
+
+    compile 'org.springframework.security.oauth:spring-security-oauth2:2.0.9.RELEASE'  // Module for providing OAuth2 support to Spring Security
+
+	compile ('org.springmodules:spring-modules-jakarta-commons:0.8') {	// Spring Modules Jakarta Commons
+		exclude group: 'javax.servlet', module: 'servlet-api'
+	}
+
+	compile "org.aspectj:aspectjrt:${version.aspectj}"
+	compile "org.aspectj:aspectjweaver:${version.aspectj}"
+
+	compile 'io.vertx:vertx-core:3.2.1'
+	compile 'io.vertx:vertx-web:3.2.1'
+	compile 'io.vertx:vertx-platform:2.1.6'	// vert.x - Effortless asynchronous application development for the modern web and enterprise
+
+	compile group: 'org.apache.tomcat', name: 'tomcat-jdbc', version: '8.0.48'	// Tomcat Jdbc
+
+	compile 'commons-io:commons-io:2.5'
+	// compile 'commons-logging:commons-logging:1.2'	// logback 으로 대체
+	compile 'commons-beanutils:commons-beanutils:1.9.2'
+	compile 'commons-fileupload:commons-fileupload:1.3.3'
+	compile 'commons-codec:commons-codec:1.10'
+	compile 'commons-collections:commons-collections:3.2.2'
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.1'
+	compile 'commons-configuration:commons-configuration:1.10' // Tools to assist in the reading of configuration/preferences files in various formats.
+
+	compile 'org.apache.commons:commons-lang3:3.4'
+	compile 'org.apache.commons:commons-pool2:2.4.2'	// Apache Commons Object Pooling Library
+	compile 'org.apache.commons:commons-dbcp2:2.1.1'
+
+	compile 'org.apache.taglibs:taglibs-standard-spec:1.2.5' // An implementation of the JSP Standard Tag Library (JSTL) Specification API.
+	compile 'org.apache.taglibs:taglibs-standard-impl:1.2.5' // An implementation of the JSP Standard Tag Library (JSTL).
+
+	compile 'org.apache.poi:poi:3.13'	// Apache POI - Java API To Access Microsoft Format Files
+	compile 'org.apache.poi:poi-ooxml:3.13'	// Apache POI - Java API To Access Microsoft Format Files
+	compile 'org.apache.poi:poi-ooxml-schemas:3.13'	// Apache POI - Java API To Access Microsoft Format Files
+
+	compile 'org.apache.httpcomponents:httpcore:4.4.4'	// Apache HttpComponents Core (blocking I/O)
+	compile 'org.apache.httpcomponents:httpclient:4.5.2'	// Apache HttpComponents Client
+
+	compile 'com.googlecode.ehcache-spring-annotations:ehcache-spring-annotations:1.2.0' // Provides a simple model for integrating Ehcache in a Spring project via annotations.
+
+	compile "org.hibernate:hibernate-entitymanager:${version.hibernate}" // Hibernate O/RM implementation of the JPA specification
+	compile group: 'org.hibernate', name: 'hibernate-validator', version: '5.0.1.Final'
+	compile group: 'org.hibernate.javax.persistence', name: 'hibernate-jpa-2.1-api', version: '1.0.0.Final'
+	compile group: 'org.springframework.data', name: 'spring-data-jpa', version: '1.10.2.RELEASE' // Spring Data module for JPA repositories.
+
+	compile group: 'com.querydsl', name: 'querydsl-core', version: '4.2.1'
+	compile group: 'com.querydsl', name: 'querydsl-jpa', version: '4.2.1'
+	compile group: 'com.querydsl', name: 'querydsl-apt', version: '4.2.1'
+	compile group: 'com.querydsl', name: 'querydsl-sql-spring', version: '4.2.1'
+
+	compile 'org.mariadb.jdbc:mariadb-java-client:2.1.2'
+
+	compile 'org.slf4j:slf4j-api:1.7.21'	// SLF4J API Module
+	compile 'org.slf4j:jcl-over-slf4j:1.7.21'	// 	JCL 1.1.1 Implemented Over SLF4J
+	compile "ch.qos.logback:logback-core:${version.logback}"
+	compile "ch.qos.logback:logback-classic:${version.logback}"
+	compile "ch.qos.logback:logback-access:${version.logback}"
+
+	compile 'dom4j:dom4j:1.6.1'	// dom4j: the flexible XML framework for Java
+	compile 'org.jdom:jdom2:2.0.6'	// A complete, Java-based solution for accessing, manipulating, and outputting XML data
+
+	compile 'joda-time:joda-time:2.9.2'	// Date and time library to replace JDK date handling
+
+    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
+
+	compile group: 'com.google.code.gson', name: 'gson', version: '2.7'
+
+	compile group: 'org.lazyluke', name: 'log4jdbc-remix', version: '0.2.7'
+
+	compile group: 'org.hamcrest', name: 'hamcrest-core', version: '1.3'
+
+	compile group: 'xalan', name: 'xalan', version: '2.7.1'
+
+    testCompile "org.springframework:spring-test:${version.spring}"
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testCompile group: 'org.testng', name: 'testng', version: '6.11'
+    runtime 'javax.servlet:jstl:1.2'
+
+    // compile 라이브러리 : 프로젝트를 컴파일할 때 필요한 의존 라이브러리들
+    // runtime 라이브러리 : 프로젝트를 실행할 때 필요한 의존 라이브러리들. 기본적으로 compile을 모두 포함한다.
+    // testCompile : 프로젝트의 테스트를 컴파일할 때 필요한 라이브러리들. 기본적으로 프로젝트의 컴파일된 클래스들과 compile 의존성을 포함한다.
+    // testRuntime : 프로젝트의 테스트를 실행할 때 필요한 라이브러리들. 기본적으로 compile, runtime, testCompile 의존성을 포함한다.
+    // providedCompile : compile과 같다. 다만 .war 파일에는 포함되지 않는다.
+    // providedRuntile : runtime과 같다. 다만 .war 파일에는 포함되지 않는다.
+}
+
+// 테스트 정보 설정
+test {
+    systemProperties 'property': 'value'
+    // systemProperties : 테스트를 실행하는 JVM에 전달할 시스템 프로퍼티 지정
+    // classpath : 테스트 작업을 수행할 때 사용할 클래스 경로 지정
+    // excludes : 테스트에서 제외할 클래스 지정. ANT 스타일 패턴을 사용한다. 예) excludes = ['org/foo/**']  org.foo 패키지 아래의 모든 클래스를 테스트에서 제외
+    // includes : 테스트에서 포함할 클래스 지정. ANT 스타일 패턴을 사용한다. 예) includes = ['org/foo/**']  org.foo 패키지 아래의 모든 클래스를 테스트에서 포함
+    // minHeapSize : 테스트 할 때 JVM에 전달할 최소 힙 메모리 크기
+    // maxHeapSize : 테스트 할 때 JVM에 전달할 최대 힙 메모리 크기
+    // jvmArgs : JVM에게 전달할 추가 인자 값. 시스템 프로퍼티와 최대/최소 힙 메모리 크기는 별도로 지정하기 때문에 이 항목에 포함되서는 안된다.
+    // useJUnit() : 테스트할 대 사용할 프레임워크로 JUnit을 지정한다. 기본적으로 JUnit을 사용
+    // useTestNG() // : 테스트할 때 사용할 프레임워크로 TestNG를 지정한다. 생략하면 JUnit을 사용
+    // beforeText{} : 테스트를 시작하기 전에 수행할 명령들을 지정
+}
+
