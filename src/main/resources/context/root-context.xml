@@ -1,7 +1,85 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans  xmlns="http://www.springframework.org/schema/beans"
-		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.2.xsd
+		http://www.springframework.org/schema/data/jpa http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd ">
 
+	<tx:annotation-driven />
 
+	<context:component-scan base-package="kr.ac.sample /> 
+
+	<!-- jpa base-package -->
+	<jpa:repositories base-package="kr.ac.sample.repository" />
+
+	<!-- MARIADB Connection Information -->
+	<bean id="dataSource" class="org.apache.tomcat.jdbc.pool.DataSource">
+		<!-- <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"> -->
+		<property name="driverClassName" value="org.mariadb.jdbc.Driver" />
+		<property name="url" value="jdbc:mariadb://x.x.x.x:33306/db_name" />
+		<property name="username" value="****" />
+		<property name="password" value="****" />
+		<property name="validationQuery" value="select 1" />
+		<property name="initialSize" value="10" /><!-- default : 10 -->
+		<property name="maxActive" value="100"/><!-- default : 100 -->
+		<property name="maxIdle" value="100"/><!-- default : maxActive -->
+		<property name="minIdle" value="10"/><!-- default value is derived from initialSize:10 -->
+		<property name="maxWait" value="5000"/><!-- default : 30000(30 seconds) -->
+		<property name="timeBetweenEvictionRunsMillis" value="5000"/><!-- default : 5000 -->
+		<property name="testOnBorrow" value="false"/><!-- default : false -->
+		<property name="testOnReturn" value="false"/><!-- default : false -->
+		<property name="testWhileIdle" value="true"/><!-- default : false -->
+	</bean>
+
+	<bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor" />
+
+	<bean id="dataSource_logging" class="net.sf.log4jdbc.Log4jdbcProxyDataSource">
+		<constructor-arg ref="dataSource" />
+		<property name="logFormatter">
+			<bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter">
+				<property name="loggingType" value="MULTI_LINE" />
+				<property name="sqlPrefix" value="SQL =>    " />
+			</bean>
+		</property>
+    </bean>
+
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" primary="true">
+		<property name="dataSource" ref="dataSource" />
+		<property name="persistenceUnitName" value="mainUnit" />
+		<property name="packagesToScan" value="cc.medijob.core.domain" />
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
+		</property>
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.dialect">org.hibernate.dialect.MySQL5Dialect</prop>
+				<prop key="hibernate.ejb.naming_strategy">org.hibernate.cfg.ImprovedNamingStrategy</prop><!-- 맴팅없이 카멜-> 스네이크형태로 변경 -->
+				<prop key="hibernate.show_sql">true</prop><!-- SQL 보기 -->
+				<prop key="hibernate.format_sql">true</prop><!-- SQL 정렬해서 보기 -->
+				<prop key="hibernate.use_sql_comments">true</prop><!-- SQL 주석보기 -->
+				<prop key="hibernate.id.new_generator_mapping">true</prop><!-- 새버전의 ID생성옵션 -->
+				<!-- <prop key="hibernate.hbm2ddl.auto">validate</prop> --><!-- DDL 자동생성(option : create, drop-and-create, none) -->
+			</props>
+		</property>
+	</bean>
+
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+		<property name="dataSource" ref="dataSource_logging" />
+	</bean>
+
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="insert*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="update*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="delete*" propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="save*"   propagation="REQUIRED" rollback-for="Exception" />
+			<tx:method name="*" 	  propagation="SUPPORTS" read-only="true"/>
+		</tx:attributes>
+	</tx:advice>
+	
+	<bean class="org.springframework.data.web.config.SpringDataWebConfiguration" />
 </beans>
