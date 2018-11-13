@@ -50,7 +50,7 @@
 	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean" primary="true">
 		<property name="dataSource" ref="dataSource" />
 		<property name="persistenceUnitName" value="mainUnit" />
-		<property name="packagesToScan" value="cc.medijob.core.domain" />
+		<property name="packagesToScan" value="kr.ac.sample.domain" />
 		<property name="jpaVendorAdapter">
 			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" />
 		</property>
