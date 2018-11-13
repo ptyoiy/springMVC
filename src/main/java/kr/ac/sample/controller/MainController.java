@@ -25,33 +25,33 @@ public class MainController {
 	@Autowired
 	BoardService boardService;
 
-	@RequestMapping(value = { "/", "/main" }, method = RequestMethod.GET)
+	@RequestMapping(value = { "/", "/board_list" }, method = RequestMethod.GET)
 	public String main(Board form, Model model) {
 		List<Board> boardList = boardService.getAllBoard(form);
 		model.addAttribute("board", boardList);
-		return "main";
+		return "board_list";
 	}
 
-	@RequestMapping(value = "/write", method = RequestMethod.GET)
-	public String write() {
-		return "write";
+	@RequestMapping(value = "/board_write", method = RequestMethod.GET)
+	public String boardWrite() {
+		return "board_write";
 	}
 
-	@RequestMapping(value = "/update", method = RequestMethod.GET)
-	public String update(Board form, Model model) {
+	@RequestMapping(value = "/board_update", method = RequestMethod.GET)
+	public String boardUpdate(Board form, Model model) {
 		Board board = boardService.boardOne(form.getBoardSeqno());
 		model.addAttribute("board", board);
-		return "update";
+		return "board_update";
 	}
 
-	@RequestMapping(value = "/board_write", method = RequestMethod.POST)
+	@RequestMapping(value = "/board_save", method = RequestMethod.POST)
 	@ResponseBody
-	public int boardWrite(Board form) {
+	public int boardSave(Board form) {
 		int count = boardService.boardSave(form);
 		return count;
 	}
 
-	@RequestMapping(value = "/board_update", method = RequestMethod.POST)
+	@RequestMapping(value = "/board_update_data", method = RequestMethod.POST)
 	@ResponseBody
 	public Board boardUpdate(Board form) {
 		Board board = boardService.boardUpdate(form);
