@@ -11,7 +11,7 @@
 
 	<tx:annotation-driven />
 
-	<context:component-scan base-package="kr.ac.sample /> 
+	<context:component-scan base-package="kr.ac.sample" /> 
 
 	<!-- jpa base-package -->
 	<jpa:repositories base-package="kr.ac.sample.repository" />
