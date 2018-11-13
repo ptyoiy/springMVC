@@ -14,4 +14,12 @@ import kr.ac.sample.domain.Board;
  */
 public interface BoardService {
 	public List<Board> getAllBoard(Board form);
+
+	public Board boardOne(long boardSeqno);
+
+	public int boardSave(Board form);
+
+	public Board boardUpdate(Board form);
+
+	public int boardDelete(long boardSeqno);
 }
