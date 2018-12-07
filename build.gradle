@@ -123,7 +123,9 @@ dependencies {
 	compile 'io.vertx:vertx-core:3.2.1'
 	compile 'io.vertx:vertx-web:3.2.1'
 	compile 'io.vertx:vertx-platform:2.1.6'	// vert.x - Effortless asynchronous application development for the modern web and enterprise
-
+	/////////////////////////
+	compile group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.0'
+	//////////////////
 	compile group: 'org.apache.tomcat', name: 'tomcat-jdbc', version: '8.0.48'	// Tomcat Jdbc
 
 	compile 'commons-io:commons-io:2.5'
